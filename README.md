@@ -1,17 +1,45 @@
-# Laravel Docker Setup
+# TestBetTask
 
-This project includes a complete Docker environment for Laravel 12 with PHP 8.4, Nginx, MySQL, Redis, and a separate MySQL test database.
+Laravel 12 application with game functionality and clean architecture.
+
+## Features
+
+- User registration with unique link generation
+- Link-based access control (Page A)
+- "I'm feeling lucky" game with win/loss calculation
+- Game history tracking (last 3 records)
+- RESTful API endpoints for all functionality
+- Docker environment (PHP 8.4, Nginx, MySQL, Redis)
+- Service layer architecture following SOLID principles
+- Custom exception handling
+- Comprehensive feature tests (18 tests, all passing)
 
 ## Requirements
 
 - Docker
 - Docker Compose
 
-## Quick Start
+## Installation
 
-1. Clone this repository
-2. Run `docker compose up -d`
-3. Access your Laravel app at: http://localhost:8080
+1. Clone the repository:
+```bash
+git clone https://github.com/KhalesArtem/TestBetTask.git
+cd TestBetTask
+```
+
+2. Run the setup script:
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+This will:
+- Build Docker containers
+- Install dependencies
+- Run migrations
+- Start the application
+
+3. Access the application at: http://localhost:8080
 
 ## Services
 
@@ -20,6 +48,20 @@ This project includes a complete Docker environment for Laravel 12 with PHP 8.4,
 - **MySQL** - Main database (port 3306)
 - **MySQL Test** - Test database (port 3307)
 - **Redis** - Cache and session storage (port 6379)
+
+## API Endpoints
+
+- `POST /api/links/{token}/renew` - Generate new link
+- `POST /api/links/{token}/deactivate` - Deactivate link
+- `POST /api/game/{token}/play` - Play the game
+- `GET /api/game/{token}/history` - Get last 3 game results
+
+## Testing
+
+Run tests with:
+```bash
+docker compose exec php php artisan test
+```
 
 ## Docker Commands
 
@@ -35,9 +77,6 @@ docker compose logs -f
 
 # Execute artisan commands
 docker compose exec php php artisan [command]
-
-# Run tests
-docker compose exec php php artisan test
 
 # Access PHP container shell
 docker compose exec php bash
@@ -56,6 +95,26 @@ docker compose exec php bash
 - Database: laravel_test
 - Username: laravel
 - Password: secret
+
+## Architecture
+
+The application follows clean architecture principles:
+
+- **Controllers**: Thin controllers that delegate to services
+- **Services**: Business logic layer (GameService, LinkService, RegistrationService)
+- **Models**: Eloquent models with relationships
+- **Exception Handling**: Custom LinkNotAccessibleException with global handler
+- **Dependency Injection**: RandomNumberGenerator service for testability
+
+## Game Rules
+
+- Random number generated between 1-1000
+- Win if number is even
+- Win amount calculation:
+  - Number > 900: 70% of number
+  - Number > 600: 50% of number
+  - Number > 300: 30% of number
+  - Otherwise: 10% of number
 
 ## Environment Files
 
