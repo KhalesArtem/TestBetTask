@@ -27,7 +27,9 @@ git clone https://github.com/KhalesArtem/TestBetTask.git
 cd TestBetTask
 ```
 
-2. Run the setup script:
+2. Build and start the application:
+
+**Option A: Using setup script (recommended for first time)**
 ```bash
 chmod +x setup.sh
 ./setup.sh
@@ -38,6 +40,27 @@ This will:
 - Install dependencies
 - Run migrations
 - Start the application
+
+**Option B: Manual setup**
+```bash
+# Build containers
+docker compose build
+
+# Start containers
+docker compose up -d
+
+# Install dependencies
+docker compose exec php composer install
+
+# Copy environment file
+cp .env.example .env
+
+# Generate application key
+docker compose exec php php artisan key:generate
+
+# Run migrations
+docker compose exec php php artisan migrate
+```
 
 3. Access the application at: http://localhost:8080
 
