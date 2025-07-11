@@ -64,6 +64,26 @@ docker compose exec php php artisan migrate
 
 3. Access the application at: http://localhost:8080
 
+## How to Use
+
+1. **Register a new user**:
+   - Go to http://localhost:8080
+   - Fill in username and phone number
+   - After registration, you'll receive a unique link
+
+2. **Access Page A**:
+   - Use the generated link to access the game page
+   - Available actions:
+     - "Сгенерировать новый линк" - Generate a new link (deactivates current)
+     - "Деактивировать данный линк" - Deactivate current link
+     - "I'm feeling lucky" - Play the game
+     - "History" - View last 3 game results
+
+3. **Game mechanics**:
+   - Click "I'm feeling lucky" to generate a random number (1-1000)
+   - Even numbers = Win, Odd numbers = Lose
+   - Win amounts vary based on the number value
+
 ## Services
 
 - **PHP 8.4** with Laravel 12
@@ -146,64 +166,55 @@ The application follows clean architecture principles:
 
 Both files are pre-configured to work with the Docker setup.
 
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## Troubleshooting
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+### Port conflicts
+If you see errors about ports already in use:
+- MySQL (3306): Change `DB_PORT` in `.env` and update `docker-compose.yml`
+- Redis (6379): Change `REDIS_PORT` in `.env` and update `docker-compose.yml`
+- Nginx (8080): Change port mapping in `docker-compose.yml` (nginx service)
 
-## About Laravel
+### Container startup issues
+```bash
+# Clean restart
+docker compose down -v  # Remove volumes
+docker compose build --no-cache
+docker compose up -d
+```
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Database connection errors
+```bash
+# Wait for MySQL to be ready (first time startup can take 30-60 seconds)
+docker compose logs mysql
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+# Manually run migrations if needed
+docker compose exec php php artisan migrate:fresh
+```
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Project Structure
 
-## Learning Laravel
+```
+app/
+├── Exceptions/          # Custom exceptions
+├── Http/Controllers/    # HTTP controllers
+├── Models/             # Eloquent models
+└── Services/           # Business logic services
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+tests/
+├── Feature/            # Feature tests
+└── Unit/              # Unit tests
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+docker/
+├── mysql/             # MySQL configuration
+├── nginx/             # Nginx configuration
+└── php/               # PHP Dockerfile and config
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Key Files
 
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- `app/Http/Controllers/RegisterController.php` - User registration
+- `app/Http/Controllers/LinkController.php` - Link management
+- `app/Http/Controllers/GameController.php` - Game logic
+- `app/Services/GameService.php` - Core game business logic
+- `app/Models/Link.php` - Link model with access validation
+- `tests/Feature/GameApiTest.php` - Comprehensive API tests
